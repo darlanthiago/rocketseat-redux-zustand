@@ -1,0 +1,102 @@
+import { beforeEach, describe, expect, it } from "vitest";
+import { useStore as store } from ".";
+
+const exampleState = {
+  course: {
+    id: 1,
+    modules: [
+      {
+        id: 1,
+        title: "Iniciando com React",
+        lessons: [
+          { id: "unfHrB2sGGM", title: "CSS Modules", duration: "13:45" },
+          {
+            id: "tR8j8NkQ29k",
+            title: "Estilização do Post",
+            duration: "10:05",
+          },
+        ],
+      },
+      {
+        id: 2,
+        title: "Estrutura da aplicação",
+        lessons: [
+          {
+            id: "gE48FQXRZ_o",
+            title: "Componente: Comment",
+            duration: "13:45",
+          },
+          {
+            id: "h5JA3wfuW1k",
+            title: "Interações no JSX",
+            duration: "06:33",
+          },
+        ],
+      },
+    ],
+  },
+  currentModuleIndex: 0,
+  currentLessonIndex: 0,
+};
+
+const initialState = store.getState();
+
+describe("player test with zustand", () => {
+  beforeEach(() => {
+    store.setState(initialState);
+  });
+  it("should be able to play", () => {
+    const { play } = store.getState();
+
+    play({
+      lessonIndex: 1,
+      moduleIndex: 2,
+    });
+
+    const { currentLessonIndex, currentModuleIndex } = store.getState();
+
+    expect(currentModuleIndex).toEqual(2);
+    expect(currentLessonIndex).toEqual(1);
+  });
+
+  it("should be able to play next video automatically", () => {
+    store.setState(exampleState);
+
+    const { next } = store.getState();
+
+    next();
+
+    const { currentLessonIndex, currentModuleIndex } = store.getState();
+
+    expect(currentModuleIndex).toEqual(0);
+    expect(currentLessonIndex).toEqual(1);
+  });
+
+  it("should be able to the next module automatically", () => {
+    store.setState({ ...exampleState, currentLessonIndex: 1 });
+    const { next } = store.getState();
+
+    next();
+
+    const { currentLessonIndex, currentModuleIndex } = store.getState();
+
+    expect(currentModuleIndex).toEqual(1);
+    expect(currentLessonIndex).toEqual(0);
+  });
+
+  it("should not update the current module and lesson index if there is no next lesson available", () => {
+    store.setState({
+      ...exampleState,
+      currentLessonIndex: 1,
+      currentModuleIndex: 1,
+    });
+    const { next } = store.getState();
+
+    next();
+
+    const { currentLessonIndex, currentModuleIndex } = store.getState();
+
+    expect(currentModuleIndex).toEqual(1);
+    expect(currentLessonIndex).toEqual(1);
+  });
+});
